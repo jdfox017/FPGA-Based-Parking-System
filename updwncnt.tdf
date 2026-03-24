@@ -1,0 +1,63 @@
+%
+    ECET 229
+    Project
+    Professor Miad
+    Jacob Fox, Kyler McCandless, Ryan Bowman
+    Last Modified: 11/3/25
+	 
+	 This code makes an up/down counter that can count up or down between
+	 0 and 9. Whenever you reset it using clrn, it starts at 9 not 0.
+%
+SUBDESIGN updwcnt
+(
+	clrn, clk, en, enup, endwn	:INPUT;  	-- input assign
+	outcount[7..0], dzero     	:OUTPUT; 	-- declare outputs
+)
+VARIABLE
+	count[7..0]               	:DFF;    	-- array variable
+BEGIN
+	count[].clk = clk;                    	-- setting clock of count to internal clock
+	--count[].clrn = clrn;  					-- clear the counter asynch
+	count[7..4].clrn = clrn;
+	count[3].prn = clrn;
+	count[2..1].clrn = clrn;
+	count[0].prn = clrn;							--upon clear/reset, initialize to the value of 9
+	
+
+	IF !en THEN count[].d = count[].q;            	-- hold
+    	IF count[].q == 0 THEN
+		dzero = VCC;
+		ELSE
+			dzero = GND;
+		END IF;
+		
+	ELSE
+    	IF count[].q == 0 THEN
+        	dzero = VCC;                  	-- flag to indicate count is at zero
+    	ELSE
+        	dzero = GND;
+    	END IF;
+
+    	IF endwn & count[].q == 0 THEN    	-- stay at zero if down count is activated
+        	count[].d = count[].q;
+        	dzero = VCC;
+
+    	ELSIF endwn & (count[].q > 0) THEN	-- decrement
+        	count[].d = count[].q - 1;
+        	dzero = GND;
+
+    	ELSIF enup & count[].q == 9 THEN
+        	count[].d = count[].q;        	-- remain at 9 if count up is activated when count = 9
+        	dzero = GND;
+
+    	ELSIF enup & (count[].q < 9) THEN 	-- increment 1
+        	count[].d = count[].q + 1;
+        	dzero = GND;
+
+    	ELSE
+        	count[].d = count[].q;
+        	dzero = GND;
+    	END IF;
+	END IF;
+	outcount[] = count[];
+END;

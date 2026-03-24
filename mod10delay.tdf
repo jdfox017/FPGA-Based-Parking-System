@@ -1,0 +1,39 @@
+%
+    ECET 229
+    Project
+    Professor Miad
+    Jacob Fox, Kyler McCandless, Ryan Bowman
+    Last Modified: 11/3/25
+	 
+This is the mod10delay ahdl code. It uses an 8-bit D-flip-flop register
+called count to hold the current value. The counter is controlled by the 
+enable signal, when en is inactive, the counter holds its current value
+When en is active the counter decrements by 1 on the rising edge of the clk signal.
+
+%
+
+SUBDESIGN mod10delay
+(
+	clrn, clk, en      	:INPUT;    	-- input assign
+	outcount[7..0], zero :OUTPUT;	-- declare outputs
+)
+VARIABLE
+	count[7..0]        	:DFF;      	-- array variable
+BEGIN
+	count[].clk = clk;                	-- setting clock of count to internal clock
+	count[].clrn = clrn;              	-- clear the counter asynch
+
+	IF !en THEN
+    	count[].d = count[].q;        	-- hold
+	ELSIF count[].q == 0 THEN
+    	count[].d = 9;
+	ELSE
+    	count[].d = count[].q - 1;    	-- decrement
+	END IF;
+
+	IF count[].q == 1 THEN
+    	zero = VCC;
+	END IF;
+
+	outcount[] = count[];             	-- output
+END;

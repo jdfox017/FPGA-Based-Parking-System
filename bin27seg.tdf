@@ -1,0 +1,33 @@
+%
+    ECET 229
+    Project
+    Professor Miad
+    Jacob Fox, Kyler McCandless, Ryan Bowman
+    Last Modified: 11/3/25
+
+    The circuit takes in a 4-bit binary input plus seven outputs that drive the segments
+on a single digit 7-segment Led display (common anode). The circuit will display digits
+from 0 to 7 in order as the input counts from 0 to 7.
+%
+
+SUBDESIGN bin27seg
+(
+    binary[3..0]   : INPUT;   -- 3-bit binary input (0-7)
+    7_seg[6..0]    : OUTPUT;  -- 7-segment output (g..a)
+)
+BEGIN
+    -- Binary to 7-segment encoding for digits 0 through 7
+    TABLE
+        binary[] => 7_seg[];
+        0  => B"1000000";  -- 0
+        1  => B"1111001";  -- 1
+        2  => B"0100100";  -- 2
+        3  => B"0110000";  -- 3
+        4  => B"0011001";  -- 4
+        5  => B"0010010";  -- 5
+        6  => B"0000010";  -- 6
+        7  => B"1111000";  -- 7
+		  8  => B"0000000";  -- 8
+		  9  => B"0010000";  -- 9
+    END TABLE;
+END;

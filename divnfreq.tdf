@@ -1,0 +1,34 @@
+%
+    ECET 229
+    Project
+    Professor Miad
+    Jacob Fox, Kyler McCandless, Ryan Bowman
+    Last Modified: 11/3/25
+
+    This is the divnfreq ahdl code. It uses a 26-bit counter loaded with
+	 50 MHz that decrements with every fast clock pulse. When the count hits 1,
+	 It outputs a single Terminal Count pulse and immediately resets. This
+	 results in a 1 Hz output pulse.
+%
+
+SUBDESIGN divnfreq
+(
+	clock, Enable     	:INPUT;  	-- setting inputs
+	TC                	:OUTPUT; 	-- setting outputs
+)
+VARIABLE
+	scale[25..0]      	:DFF;    	-- variable declare must be size of clock value to divide
+BEGIN
+	scale[].clk = clock;           	-- set clock of scale to internal clock of 50mhz
+	IF scale[].q == 0 THEN
+    	scale[].d = 50000000;      	-- if scale output is zero, then scale.d is 50,000,000
+	ELSIF !Enable THEN             	-- if enable is on
+    	scale[].d = scale[].q;     	-- hold value of d in q
+	ELSIF scale[].q == 1 THEN
+    	scale[].d = 50000000;      	-- set scale d to 50,000,000
+    	TC = vcc;                  	-- activate terminal count
+	ELSE
+    	scale[].d = scale[].q - 1; 	-- decrement count by one. by setting value to 5*10^7, clock will be divided into 1 hz
+	END IF;
+                                	
+END;

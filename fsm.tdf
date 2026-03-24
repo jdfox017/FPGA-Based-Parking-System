@@ -1,0 +1,76 @@
+%
+    ECET 229
+    Project
+    Professor Miad
+    Jacob Fox, Kyler McCandless, Ryan Bowman
+    Last Modified: 11/3/25
+	 
+	 This code manages the car parking system by moving through 4 states
+	 reset, hz, done, and allFull. 
+%
+SUBDESIGN fsm
+(
+	clk, reset, hz, done, allFull 	:INPUT; --inputs
+	eff_en, delay_en  					:OUTPUT; --outputs
+)
+VARIABLE
+	sm : MACHINE --machine declaration
+	WITH STATES (s0, s1, s2, s3); --states declarations
+
+BEGIN
+	sm.clk = clk; --assign clock of machine with input clock (50MHz clock)
+	sm.ena = hz; --assign enable of machine with 1Hz input from clock divider
+
+CASE sm IS
+	WHEN s0 => --state 0 (reset)
+    delay_en = GND;
+	 eff_en = GND;
+	 
+    	IF !reset THEN
+        	sm = s0;
+    	ELSE 
+			sm = s1;
+    	END IF;
+
+	WHEN s1 => --state 1 (Counting state for all parking levels)
+    	delay_en = GND;
+		eff_en = VCC;
+	 
+    	IF !reset THEN
+        	sm = s0;
+    	 ELSIF !allFull THEN
+                sm = s1;             -- remain counting
+            ELSIF allFull THEN
+                sm = s2;             -- go to delay state
+            END IF;
+
+	WHEN s2 => --state 2 (Ready for Dec)
+				delay_en = VCC;          -- activate delay unit
+            eff_en   = GND;          -- disable switches and keys
+
+            IF !reset THEN
+                sm = s0;             -- reset
+            ELSIF !done THEN
+                sm = s2;             -- remain in delay
+            ELSIF done & allFull THEN
+                eff_en = VCC;        -- re-enable switches
+                sm = s3;             -- all spots full, no delay needed
+ELSIF done & !allFull THEN
+                eff_en = VCC;        -- re-enable switches
+                sm = s1;             -- go back to counting
+            END IF;	
+
+	WHEN s3 => --state 3 (Inc1)
+				delay_en = GND;          -- deactivate delay unit
+            eff_en   = VCC;          -- enable switches and keys
+
+            IF !reset THEN
+                sm = s0;             -- reset
+            ELSIF allFull THEN
+                sm = s3;             -- remain here if still full
+            ELSIF !allFull THEN
+                sm = s1;             -- return to counting
+            END IF;
+
+END CASE;
+END;
